@@ -1,0 +1,4 @@
+---
+base_dirs:
+- /opt/java/
+# vars file for install-java-versions

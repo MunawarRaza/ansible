@@ -1,0 +1,21 @@
+---
+- name: "Update RedHat servers"
+  yum:
+    name: '*'
+    state: latest
+    exclude: nginx*,rabbitmq*,erlang*,docker*
+  register: server_update_status
+  when:
+  - ansible_distribution == "RedHat" or ansible_facts['distribution'] == "fedora"
+  - subscription_status.stdout == "Current"
+- name: "Check subscription status"
+  debug:
+    msg: "Subscription status - {{ subscription_status.stdout }}"
+- name: "Check updated pacakges"
+  debug:
+    msg: "{{ server_update_status }}"
+- name: "Wait for 10 seconds"
+  pause:
+    seconds: 10
+
+ 

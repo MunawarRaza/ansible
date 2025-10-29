@@ -1,0 +1,15 @@
+---
+- name: This play book will be used to manage the users
+  hosts: "{{ target }}"
+  vars_prompt:
+  - name: user_type
+    prompt: "What do you want? (1-Simple User, 2-User with sudo rights, 3-Reset password, 4-Delete user)  "
+    private: false
+  - name: user_name
+    prompt: "Please Enter Username "
+    private: false
+  vars:
+    user_password: "$y$j9T$ZQK6KkGDGwuiGMGARmg44.$b.zljt2yWPJMkrjfRNf8tROlyUsCcME3K416dnEDEuA"
+    # Abcd@1234
+  roles:
+  - linux-user-management

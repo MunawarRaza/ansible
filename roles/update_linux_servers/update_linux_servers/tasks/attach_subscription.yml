@@ -1,0 +1,20 @@
+---
+- name: "Attach subscription to server"
+  redhat_subscription:
+    state: present
+    username: "{{ subscription_username }}"
+    password: "{{ subscription_password }}"
+    auto_attach: true
+    syspurpose:
+      service_level_agreement: "Self-Support"
+  register: attached_subscription
+  when:
+  - ansible_facts['distribution'] == "RedHat" or ansible_facts['distribution'] == "fedora"
+  - "'Current' not in subscription_status.stdout"
+- name: "Wait for 30 seconds"
+  pause:
+    seconds: 30
+- name: "Check subscription is attached or not"
+  debug:
+    msg: "{{ attached_subscription }}"
+

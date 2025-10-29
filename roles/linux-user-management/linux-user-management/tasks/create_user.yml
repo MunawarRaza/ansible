@@ -1,0 +1,16 @@
+---
+#- name: Generate hashed password
+#  shell: "mkpasswd -m sha-512 {{ user_password }}"
+#  register: hashed_password
+#  changed_when: false
+- name: Create User
+  user:
+    name: "{{ user_name }}"
+    password: "{{ user_password }}"
+    shell: /bin/bash
+  register: create_user
+- name: Check status of user
+  debug:
+    msg: "{{ create_user }}"
+- name: Expire password
+  command: "passwd -e '{{ user_name }}'"

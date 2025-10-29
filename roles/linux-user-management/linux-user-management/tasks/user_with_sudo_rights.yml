@@ -1,0 +1,16 @@
+---
+- name: Create user
+  include_tasks: create_user.yml
+- name: Add user into sudo group
+  user:
+    name: "{{ user_name }}"
+    group: sudo
+  when:
+  - ansible_facts['distribution'] == "Ubuntu"
+
+- name: Add user into wheel group
+  user:
+    name: "{{ user_name }}"
+    group: wheel
+  when:
+  - ansible_facts['distribution'] == "RedHat" or ansible_facts['distribution'] == "CentOs"

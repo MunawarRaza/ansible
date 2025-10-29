@@ -1,0 +1,6 @@
+---
+- name: install java 17
+  apt:
+    name: openjdk-17-jdk
+    state: present
+  when: java_version == "17"

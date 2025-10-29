@@ -1,0 +1,8 @@
+---
+# tasks file for install-docker
+
+- include_tasks: update-server.yml
+- include_tasks: add-dependencies.yml
+- include_tasks: install-docker.yml
+- include_tasks: start-service.yml
+- include_tasks: install-docker-compose.yml

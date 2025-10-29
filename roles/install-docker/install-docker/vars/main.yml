@@ -1,0 +1,9 @@
+---
+#vars:
+pkgs:
+ - docker-ce
+ - docker-ce-cli
+ - containerd.io
+ - docker-buildx-plugin
+ - docker-compose-plugin
+# vars file for install-docker

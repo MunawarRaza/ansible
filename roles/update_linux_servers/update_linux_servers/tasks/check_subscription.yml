@@ -1,0 +1,6 @@
+---
+- name: "Check subscription on redhat"
+  shell:
+    subscription-manager status |awk 'NR==4 {print $3}'
+  register: subscription_status
+  when: ansible_distribution == "RedHat"

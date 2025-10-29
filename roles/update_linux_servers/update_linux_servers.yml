@@ -1,0 +1,14 @@
+---
+- name: this will be used to manage subscription
+  hosts: "{{ target }}"
+  vars_prompt:
+  - name: subscription_username
+    prompt: "Please Enter subscription username: " 
+    private: false
+  - name: subscription_password
+    prompt: "Please Enter subscription password: "
+    private: true
+  #become: true
+  serial: 1
+  roles:
+  - update_linux_servers

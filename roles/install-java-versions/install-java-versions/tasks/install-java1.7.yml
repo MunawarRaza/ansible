@@ -1,0 +1,22 @@
+---
+- block:
+  - name: create base dir
+    command: mkdir -p "{{ base_dirs[0] }}"
+  - name: install JAVA "{{ java_version }}"
+    copy:
+      src: ../files/jdk-7u80-linux-x64.tar
+      dest: "{{ base_dirs[0] }}"
+  - name: extract java files on remote machines
+    unarchive:
+      src: "{{ base_dirs[0] }}/jdk-7u80-linux-x64.tar"
+      dest: "{{ base_dirs[0] }}"
+      remote_src: yes
+  - name: Install Java alternative for java
+    command: "update-alternatives --install '/usr/bin/java' 'java' '{{ base_dirs[0] }}/jdk1.7.0_80/bin/java' 1"
+  - name: Set Java alternative
+    command: "update-alternatives --set 'java' '{{ base_dirs[0] }}/jdk1.7.0_80/bin/java'"
+  - name: Install Java alternative for javac
+    command: "update-alternatives --install '/usr/bin/javac' 'javac' '{{ base_dirs[0] }}/jdk1.7.0_80/bin/javac' 1"
+  - name: install keytool alternative for java
+    command: "update-alternatives --install '/usr/bin/keytool' 'keytool' '{{ base_dirs[0] }}/jdk1.7.0_80/jre/bin/keytool' 100"
+  when: java_version == "1.7"

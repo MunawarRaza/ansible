@@ -1,0 +1,6 @@
+---
+- name: install java 1.8
+  apt:
+    name: openjdk-8-jdk
+    state: present
+  when: java_version == "1.8"

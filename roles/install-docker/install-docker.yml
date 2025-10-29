@@ -1,0 +1,7 @@
+---
+- name: This role will be used to install docker and docker compose
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+  - install-docker

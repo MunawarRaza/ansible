@@ -1,0 +1,7 @@
+---
+- name: check java version
+  command: "java -version"
+  register: installed_java_Version
+- name: Installed java version
+  debug:
+    msg: "{{ installed_java_Version }}"

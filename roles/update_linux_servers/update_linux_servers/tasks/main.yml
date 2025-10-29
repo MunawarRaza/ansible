@@ -1,0 +1,7 @@
+---
+- include_tasks: check_subscription.yml
+- include_tasks: attach_subscription.yml
+- include_tasks: check_subscription.yml
+- include_tasks: update_server.yml
+- include_tasks: remove_subscription.yml
+

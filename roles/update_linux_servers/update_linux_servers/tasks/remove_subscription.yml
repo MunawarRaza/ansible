@@ -1,0 +1,9 @@
+---
+- name: "Remove the subscription"
+  redhat_subscription:
+    state: absent
+  register: subscription_removed_status
+  when: ansible_distribution == "RedHat"
+- name: "Check subscription after removal play"
+  debug:
+    msg: "{{ subscription_removed_status }}"

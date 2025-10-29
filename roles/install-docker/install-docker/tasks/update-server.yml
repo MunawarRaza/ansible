@@ -1,0 +1,6 @@
+---
+- name: Update the server
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+

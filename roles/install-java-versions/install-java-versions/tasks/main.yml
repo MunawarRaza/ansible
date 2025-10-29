@@ -1,0 +1,7 @@
+---
+# tasks file for install-java-versions
+
+- include_tasks: install-java1.7.yml
+- include_tasks: install-java1.8.yml
+- include_tasks: install-java17.yml
+- include_tasks: check_installed_version.yml
