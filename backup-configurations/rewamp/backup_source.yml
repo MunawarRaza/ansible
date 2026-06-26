@@ -1,0 +1,54 @@
+---
+- name: Add source and target hosts dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add source host to inventory
+      add_host:
+        name: "{{ SOURCE_MACHINE }}"
+        ansible_user: "{{ ANSIBLE_USER }}"
+
+    # - name: Add remote machine host to inventory
+    #   add_host:
+    #     name: "{{ BACKUP_MACHINE }}"
+    #     ansible_user: "{{ ANSIBLE_USER }}"
+
+- name: Tar and transfer folder, unarchive, and execute script
+  hosts: "{{ SOURCE_MACHINE }}"
+  become: yes
+  gather_facts: false
+  remote_user: "{{ ANSIBLE_REMOTE_USER }}"
+  tasks:
+    - name: Safely remove only matching folders
+      shell: >
+        find "{{ TEMP_DESTINATION_BASE_PATH }}" -maxdepth 1 -type d -name "{{ SOURCE_FOLDER }}*" -exec rm -rf {} +
+      when:
+        - TEMP_DESTINATION_BASE_PATH | length > 1
+        - SOURCE_FOLDER | length > 0
+
+    - name: Execute bash Script on source machine
+      script:
+        cmd: ./backupScript.sh "{{ CURRENT_DATE }}" "{{ ENV_NAME }}" "{{ SOURCE_MACHINE }}" "{{ SOURCE_BASE_PATH }}" "{{ SOURCE_FOLDER }}" "{{ TEMP_DESTINATION_BASE_PATH }}"  "{{ LOCAL_DESTINATION_BASE_PATH }}" "{{ DEPLOYMENTS_FOLDER }}" "{{ CONFIGURATION_FOLDER }}" "{{ PROFILES_PATH }}"
+
+    - name: Ensure local destination folder exists
+      delegate_to: localhost
+      file:
+        path: "{{ LOCAL_DESTINATION_BASE_PATH }}/{{ CURRENT_DATE }}/{{ ENV_NAME }}/{{ SOURCE_MACHINE }}"
+        state: directory
+        mode: '0755'
+
+    - name: Fetch tar file on local machine
+      synchronize:
+        src: "{{ TEMP_DESTINATION_BASE_PATH }}/{{ SOURCE_FOLDER }}-{{ CURRENT_DATE }}.tar"
+        dest: "{{ LOCAL_DESTINATION_BASE_PATH }}/{{ CURRENT_DATE }}/{{ ENV_NAME }}/{{ SOURCE_MACHINE }}/"
+        mode: pull
+        rsync_opts:
+          - "--progress"
+          - "--verbose"
+
+    - name: Deleting folder from source machine
+      shell: >
+        find "{{ TEMP_DESTINATION_BASE_PATH }}" -maxdepth 1 -name "{{ SOURCE_FOLDER }}-{{ CURRENT_DATE }}*" -exec rm -rf {} +
+
+
+

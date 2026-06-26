@@ -1,0 +1,15 @@
+---
+- name: Transfer to Remote Server
+  hosts: "{{ BACKUP_MACHINE }}"
+  become: yes
+  gather_facts: false
+  remote_user: "{{ ANSIBLE_REMOTE_USER }}"
+  tasks:
+  - name: Push tar file to remote Machine
+    synchronize:
+      src: "{{ LOCAL_DESTINATION_BASE_PATH }}/{{ CURRENT_DATE }}.tar.gz"
+      dest: "{{ FINAL_DESTINATION_BASE_PATH }}/"
+      mode: push
+      rsync_opts:
+        - "--progress"
+        - "--verbose"

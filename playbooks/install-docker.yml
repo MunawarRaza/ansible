@@ -1,0 +1,8 @@
+---
+- name: Add source and target hosts dynamically
+  hosts: "{{ target }}"
+  remote_user: munawar
+  become: true
+  gather_facts: true
+  roles:
+  - install-docker

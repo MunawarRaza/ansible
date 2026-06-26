@@ -1,0 +1,79 @@
+---
+- name: Add source and target hosts dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add source host to inventory
+      add_host:
+        name: "{{ SOURCE_MACHINE }}"
+        ansible_user: munawar
+    - name: Add target host to inventory
+      add_host:
+        name: "{{ TARGET_MACHINE }}"
+        ansible_user: munawar
+        
+- name: Tar and transfer folder, unarchive, and execute script
+  hosts: "{{ SOURCE_MACHINE }}"
+  become: yes
+  gather_facts: false
+  remote_user: munawar
+  tasks:
+    - name: Removing folder if already exist
+      shell: >
+        rm -rf "{{ NEW_FOLDER_BASE_PATH }}/{{ FOLDER_NAME }}"*
+
+    - name: Execute bash Script on source machine
+      #script: ./sync_envs.sh
+      script:
+        cmd: ./sync_envs.sh "{{ CURRENT_DATE }}" "{{ FOLDER_NAME }}" "{{ NEW_FOLDER_BASE_PATH }}"
+     # delegate_to: "{{ source_host }}"
+
+    - name: Fetch tar file on local machine
+      synchronize:
+        src: "{{ NEW_FOLDER_BASE_PATH }}/{{ FOLDER_NAME }}-{{ CURRENT_DATE }}.tar"
+        dest: /tmp/
+        mode: pull
+        rsync_opts:
+          - "--progress"
+          - "--verbose"
+      # delegate_to: "{{ source_host }}"
+
+- name: Copy tar file to target server, unarchive, and execute script
+  hosts: "{{ TARGET_MACHINE }}"
+  gather_facts: false
+  become: yes
+  remote_user: munawar
+  tasks:
+    #- name: Rename folder
+    #  command: mv /opt/{{ FOLDER_NAME }}-{{ CURRENT_DATE }} /opt/{{ FOLDER_NAME }}
+
+    - name: Copy tar file to destination server
+      copy:
+        src: /tmp/{{ FOLDER_NAME }}-{{ CURRENT_DATE }}.tar
+        dest: /opt/
+
+    - name: Unarchive tar file on destination server
+      unarchive:
+        src: /opt/{{ FOLDER_NAME }}-{{ CURRENT_DATE }}.tar
+        dest: /opt/
+        remote_src: yes
+    - name: Rename folder
+      command: mv /opt/{{ FOLDER_NAME }}-{{ CURRENT_DATE }} /opt/{{ FOLDER_NAME }}
+
+- name: Deleting folder from local
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name:
+      command:
+        rm -rf /tmp/{{ FOLDER_NAME }}-{{ CURRENT_DATE }}.tar
+
+- name: Deleting folder from source machine
+  hosts: "{{ SOURCE_MACHINE }}"
+  become: yes
+  gather_facts: false
+  tasks:
+    - name:
+      shell: >
+        rm -rf "{{ NEW_FOLDER_BASE_PATH }}/{{ FOLDER_NAME }}"*
+

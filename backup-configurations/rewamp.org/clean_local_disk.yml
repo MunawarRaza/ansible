@@ -1,0 +1,8 @@
+---
+- name: Create Tar File Locally
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Deleting folder from source machine
+    shell: >
+      find "{{ LOCAL_DESTINATION_BASE_PATH }}" -maxdepth 1 -name "{{ CURRENT_DATE }}*" -exec rm -rf {} +

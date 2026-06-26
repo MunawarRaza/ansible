@@ -1,0 +1,10 @@
+---
+- name: Delete Extra file from backup machine
+  hosts: "{{ BACKUP_MACHINE }}"
+  become: yes
+  gather_facts: false
+  remote_user: "{{ ANSIBLE_REMOTE_USER }}"
+  tasks:
+  - name: Deleting folder from backup machine
+    shell: >
+      find "{{ FINAL_DESTINATION_BASE_PATH }}" -ctime +30 -exec rm -rf {} +

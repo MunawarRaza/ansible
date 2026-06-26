@@ -1,0 +1,11 @@
+---
+# tasks file for node-exporter
+
+- import_tasks: check.yml
+
+# - import_tasks: install.yml
+#   when: install_required
+
+# - import_tasks: service.yml
+
+# - import_tasks: verify.yml

@@ -1,0 +1,39 @@
+---
+- name: Copy archive
+  copy:
+    src: "{{ node_exporter_archive }}"
+    dest: /tmp/
+
+- name: Extract archive
+  unarchive:
+    src: "/tmp/{{ node_exporter_archive }}"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Create node_exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    shell: /usr/sbin/nologin
+    system: yes
+
+- name: Copy binary
+  copy:
+    src: "/tmp/{{ node_exporter_extract_dir }}/node_exporter"
+    dest: "{{ node_exporter_binary }}"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy systemd file
+  template:
+    src: node_exporter.service.j2
+    dest: "{{ node_exporter_service_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Node Exporter
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true

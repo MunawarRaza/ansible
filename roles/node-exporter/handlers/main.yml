@@ -1,0 +1,6 @@
+---
+# handlers file for node-exporter
+- name: Restart Node Exporter
+  systemd:
+    name: "{{ node_exporter_service }}"
+    state: restarted

@@ -1,0 +1,85 @@
+---
+- name: Add source and target hosts dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add target host to inventory
+      ansible.builtin.add_host:
+        name: "{{ TARGET_MACHINES }}"
+        # ansible_user: munawar
+
+- name: Manage Users
+  hosts: "{{ TARGET_MACHINES }}"
+  remote_user: "{{ ANSIBLE_REMOTE_USER }}"
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Create Simple User
+      ansible.builtin.user:
+        name: "{{ USER_NAME }}"
+        password: "{{ DEFAULT_PASSWORD | password_hash('sha512') }}"
+        shell: /bin/bash
+      when: NON_PRIVILEGED is defined and NON_PRIVILEGED | bool
+
+    - name: Create Privileged User
+      ansible.builtin.user:
+        name: "{{ USER_NAME }}"
+        password: "{{ DEFAULT_PASSWORD | password_hash('sha512') }}"
+        groups: sudo
+        shell: /bin/bash
+      when: PRIVILEGED is defined and PRIVILEGED | bool
+
+    - name: Reset User Password
+      ansible.builtin.user:
+        name: "{{ USER_NAME }}"
+        password: "{{ DEFAULT_PASSWORD | password_hash('sha512') }}"
+        update_password: always
+      when: UPDATE_PASSWORD is defined and UPDATE_PASSWORD | bool
+
+    - name: Expire password if required
+      ansible.builtin.command: "chage -d 0 {{ USER_NAME }}"
+      when: EXPIRES_PASSWORD is defined and EXPIRES_PASSWORD | bool
+
+    - name: Delete User
+      ansible.builtin.user:
+        name: "{{ USER_NAME }}"
+        state: absent
+        remove: yes
+      when: DELETE_USER is defined and DELETE_USER | bool
+      notify:
+      - log out users
+      - log out users | kill all active sessions
+
+    - name: Lock User
+      ansible.builtin.command: "usermod -L {{ USER_NAME }}"
+      when: DISABLE_USER is defined and DISABLE_USER | bool
+      notify:
+      - log out users
+      - log out users | kill all active sessions
+
+    - name: Unlock User
+      ansible.builtin.command: "usermod -U {{ USER_NAME }}"
+      when: ENABLE_USER is defined and ENABLE_USER | bool
+
+  handlers:
+    - name: log out users
+      ansible.builtin.shell: "ps -eo pid | grep '{{ USER_NAME }}'"
+      register: user_sessions
+      changed_when: false
+      
+    - name: log out users | kill all active sessions
+      ansible.builtin.shell: "pkill -KILL -t {{ item }}"
+      loop: "{{ user_sessions.stdout_lines }}"
+      when: user_sessions.stdout_lines | length > 0
+      ignore_errors: true
+    # - name: log out users
+    #   ansible.builtin.shell: "who | grep '{{ USER_NAME }}' | awk '{print $2}'"
+    #   register: user_sessions
+    #   changed_when: false
+
+    # - name: log out users | kill all active sessions
+    #   ansible.builtin.shell: "pkill -KILL -t {{ item }}"
+    #   loop: "{{ user_sessions.stdout_lines }}"
+    #   when: user_sessions.stdout_lines | length > 0
+    #   ignore_errors: true

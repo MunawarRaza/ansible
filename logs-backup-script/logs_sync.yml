@@ -1,0 +1,36 @@
+---
+- name: Add source hosts dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add source host to inventory
+      add_host:
+        name: "{{ SOURCE_MACHINE }}"
+        ansible_user: "{{ ANSIBLE_USER }}"
+
+    # - name: Add remote machine host to inventory
+    #   add_host:
+    #     name: "{{ BACKUP_MACHINE }}"
+    #     ansible_user: "{{ ANSIBLE_USER }}"
+
+- name: Sync logs from remote to local machine
+  hosts: "{{ SOURCE_MACHINE }}"
+  become: yes
+  gather_facts: false
+  remote_user: "{{ ANSIBLE_REMOTE_USER }}"
+  tasks:
+    - name: Ensure local destination folder exists
+      delegate_to: localhost
+      file:
+        path: "{{ FINAL_DESTINATION_BASE_PATH }}/{{ CURRENT_DATE }}/{{ SOURCE_MACHINE }}/"
+        state: directory
+        mode: '0755'
+
+    - name: Sync Logs folder from source machines to destination
+      synchronize:
+        src: "{{ SOURCE_BASE_PATH }}/*"
+        dest: "{{ FINAL_DESTINATION_BASE_PATH }}/{{ CURRENT_DATE }}/{{ SOURCE_MACHINE }}/"
+        mode: pull
+        rsync_opts:
+          - "--progress"
+          - "--verbose"
